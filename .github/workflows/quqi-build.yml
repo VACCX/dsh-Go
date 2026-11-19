@@ -96,6 +96,20 @@ jobs:
           cd app
           flutter pub get --enforce-lockfile
           flutter gen-l10n
+      - name: Patch Swift plugins for this Xcode
+        run: |
+          set -u
+          root="$HOME/.pub-cache/hosted/pub.dev"
+          if [ -d "$root" ]; then
+            grep -rl "isUltraConstrained" "$root" 2>/dev/null | while read -r f; do
+              sed -i '' 's/\.isUltraConstrained/.isConstrained/g' "$f"
+              echo "patched $f"
+            done
+          fi
+          if grep -rl "isUltraConstrained" "$root" 2>/dev/null; then
+            echo "STILL PRESENT"; exit 1
+          fi
+          echo "no isUltraConstrained left"
 
       - name: Check where the engine looks for its addons
         run: |
@@ -398,6 +412,20 @@ jobs:
           cd app
           flutter pub get --enforce-lockfile
           flutter gen-l10n
+      - name: Patch Swift plugins for this Xcode
+        run: |
+          set -u
+          root="$HOME/.pub-cache/hosted/pub.dev"
+          if [ -d "$root" ]; then
+            grep -rl "isUltraConstrained" "$root" 2>/dev/null | while read -r f; do
+              sed -i '' 's/\.isUltraConstrained/.isConstrained/g' "$f"
+              echo "patched $f"
+            done
+          fi
+          if grep -rl "isUltraConstrained" "$root" 2>/dev/null; then
+            echo "STILL PRESENT"; exit 1
+          fi
+          echo "no isUltraConstrained left"
 
       - name: Run the engine inside the app
         if: ${{ !cancelled() && steps.prepare.outcome == 'success' }}
