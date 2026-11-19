@@ -1,10 +1,9 @@
-// About DSH Go: app information, the original author and personal profiles,
-// then the brand mark, slogan and unofficial-app disclaimer.
-
-import 'dart:async';
+// About QUQI: app information, then the brand mark and slogan.
+//
+// 2026-11 QUQI 版：原作者与个人主页（B站 / X / GitHub）、开源许可入口一律不保留。
+// 这与上游仓库的同名文件不再相同，属于衍生构建。
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
@@ -19,11 +18,10 @@ import '../theme/theme.dart';
 import '../update/update_tiles.dart';
 import 'settings_widgets.dart';
 
-/// The installed version as the app shows it: `0.9.6 (10271234)`.
+/// The installed version as the app shows it: `8.4.9 (1)`.
 String installedVersionLabel(WidgetRef ref) {
-  // What Android reports as installed (the compiled-in constant until it does).
-  final installed = ref.watch(appUpdateProvider.select((s) => s.current));
-  return installed.build == null ? installed.name : '${installed.name} (${installed.build})';
+  final installed = ref.watch(installedBuildProvider);
+  return installed;
 }
 
 class AboutPage extends ConsumerWidget {
@@ -49,41 +47,11 @@ class AboutPage extends ConsumerWidget {
               key: const ValueKey('settings-star'),
               spot: Spots.star,
               onTap: () => unawaited(
-                openStarProject(ProviderScope.containerOf(context, listen: false), ScaffoldMessenger.maybeOf(context)),
+                openStarProject(
+                  ProviderScope.containerOf(context, listen: false),
+                  ScaffoldMessenger.maybeOf(context),
+                ),
               ),
-            ),
-            SettingsTile(
-              spot: Spots.licenses,
-              onTap: () => showLicensePage(
-                context: context,
-                applicationName: AppInfo.name,
-                applicationVersion: version,
-                applicationIcon: const Padding(padding: EdgeInsets.all(12), child: BrandMark(size: 56, tile: true)),
-                applicationLegalese: AppInfo.disclaimer,
-              ),
-            ),
-          ],
-        ),
-        SettingsSection(
-          title: l10n.hubAboutAuthor,
-          children: [
-            const SettingsTile(title: AppInfo.author),
-            _authorLink(
-              context,
-              ref,
-              'about-author-bilibili',
-              l10n.hubAboutBilibili,
-              AppInfo.authorBilibiliName,
-              AppInfo.authorBilibiliUrl,
-            ),
-            _authorLink(context, ref, 'about-author-x', l10n.hubAboutX, AppInfo.authorXHandle, AppInfo.authorXUrl),
-            _authorLink(
-              context,
-              ref,
-              'about-author-github',
-              l10n.hubAboutGithub,
-              '@${AppInfo.author}',
-              AppInfo.authorGithubUrl,
             ),
           ],
         ),
@@ -109,38 +77,5 @@ class AboutPage extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-  Widget _authorLink(BuildContext context, WidgetRef ref, String key, String title, String handle, String url) =>
-      Semantics(
-        link: true,
-        child: SettingsTile(
-          key: ValueKey(key),
-          title: title,
-          subtitle: handle,
-          trailing: Icon(AppIcons.openExternal, size: 18, color: DshColors.of(context).textTertiary),
-          onTap: () => unawaited(_openAuthorLink(context, ref, Uri.parse(url))),
-        ),
-      );
-
-  Future<void> _openAuthorLink(BuildContext context, WidgetRef ref, Uri url) async {
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    try {
-      if (await ref.read(starLinkOpenerProvider)(url)) return;
-    } catch (_) {
-      // As with the project's link, fall back to copying when no browser opens.
-    }
-    var copied = true;
-    try {
-      await Clipboard.setData(ClipboardData(text: url.toString()));
-    } catch (_) {
-      copied = false;
-    }
-    if (messenger?.mounted ?? false) {
-      messenger!.showSnackBar(
-        SnackBar(content: Text(copied ? l10n.shellBrowserUrlCopied : l10n.stateBrowserOpenFailed)),
-      );
-    }
   }
 }
