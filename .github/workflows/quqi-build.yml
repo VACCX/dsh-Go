@@ -138,6 +138,7 @@ jobs:
       - name: Restore the phone runner library
         id: phone-runner
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        continue-on-error: true
         with:
           path: app/ios/PhoneSelfRunnerNative
       - name: Use the restored phone runner library
@@ -195,6 +196,7 @@ jobs:
       - name: Restore the iSH frameworks and fixed source archive
         id: ish-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        continue-on-error: true
         with:
           path: |
             app/ios/Engine/ish-cache
@@ -226,6 +228,7 @@ jobs:
       - name: Save the compiled iSH cache
         if: steps.ish-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        continue-on-error: true
         with:
           path: |
             app/ios/Engine/ish-cache
@@ -407,6 +410,7 @@ jobs:
       - name: Save the phone runner library
         if: steps.phone-runner.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        continue-on-error: true
         with:
           path: app/ios/PhoneSelfRunnerNative
           key: ${{ steps.phone-runner.outputs.cache-primary-key }}
