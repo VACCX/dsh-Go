@@ -1,9 +1,10 @@
-// About QUQI: app information, then the brand mark and slogan.
-//
-// 2026-11 QUQI 版：原作者与个人主页（B站 / X / GitHub）、开源许可入口一律不保留。
-// 这与上游仓库的同名文件不再相同，属于衍生构建。
+// About DSH Go: app information, the original author and personal profiles,
+// then the brand mark, slogan and unofficial-app disclaimer.
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
@@ -18,10 +19,11 @@ import '../theme/theme.dart';
 import '../update/update_tiles.dart';
 import 'settings_widgets.dart';
 
-/// The installed version as the app shows it: `8.4.9 (1)`.
+/// The installed version as the app shows it: `0.9.6 (10271234)`.
 String installedVersionLabel(WidgetRef ref) {
-  final installed = ref.watch(installedBuildProvider);
-  return installed;
+  // What Android reports as installed (the compiled-in constant until it does).
+  final installed = ref.watch(appUpdateProvider.select((s) => s.current));
+  return installed.build == null ? installed.name : '${installed.name} (${installed.build})';
 }
 
 class AboutPage extends ConsumerWidget {
@@ -47,10 +49,7 @@ class AboutPage extends ConsumerWidget {
               key: const ValueKey('settings-star'),
               spot: Spots.star,
               onTap: () => unawaited(
-                openStarProject(
-                  ProviderScope.containerOf(context, listen: false),
-                  ScaffoldMessenger.maybeOf(context),
-                ),
+                openStarProject(ProviderScope.containerOf(context, listen: false), ScaffoldMessenger.maybeOf(context)),
               ),
             ),
           ],
@@ -77,5 +76,38 @@ class AboutPage extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Widget _authorLink(BuildContext context, WidgetRef ref, String key, String title, String handle, String url) =>
+      Semantics(
+        link: true,
+        child: SettingsTile(
+          key: ValueKey(key),
+          title: title,
+          subtitle: handle,
+          trailing: Icon(AppIcons.openExternal, size: 18, color: DshColors.of(context).textTertiary),
+          onTap: () => unawaited(_openAuthorLink(context, ref, Uri.parse(url))),
+        ),
+      );
+
+  Future<void> _openAuthorLink(BuildContext context, WidgetRef ref, Uri url) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    try {
+      if (await ref.read(starLinkOpenerProvider)(url)) return;
+    } catch (_) {
+      // As with the project's link, fall back to copying when no browser opens.
+    }
+    var copied = true;
+    try {
+      await Clipboard.setData(ClipboardData(text: url.toString()));
+    } catch (_) {
+      copied = false;
+    }
+    if (messenger?.mounted ?? false) {
+      messenger!.showSnackBar(
+        SnackBar(content: Text(copied ? l10n.shellBrowserUrlCopied : l10n.stateBrowserOpenFailed)),
+      );
+    }
   }
 }
