@@ -13,7 +13,6 @@ import '../../state/star_prompt.dart' show starLinkOpenerProvider;
 import '../../state/update_state.dart';
 import '../shell/brand_mark.dart';
 import '../shell/page_frame.dart';
-import '../star/star_prompt_dialog.dart' show openStarProject;
 import '../theme/app_icons.dart';
 import '../theme/theme.dart';
 import '../update/update_tiles.dart';
@@ -45,13 +44,6 @@ class AboutPage extends ConsumerWidget {
               value: Text(version, style: AppType.tabular(theme.textTheme.bodyMedium!)),
             ),
             const AppUpdateTiles(),
-            SettingsTile(
-              key: const ValueKey('settings-star'),
-              spot: Spots.star,
-              onTap: () => unawaited(
-                openStarProject(ProviderScope.containerOf(context, listen: false), ScaffoldMessenger.maybeOf(context)),
-              ),
-            ),
           ],
         ),
         Padding(
