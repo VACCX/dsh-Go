@@ -80,6 +80,14 @@ jobs:
             app/ios/Runner/IOSPhoneCoreDevice.swift app/ios/Runner/IOSPhoneScreen.swift \
             app/ios/Runner/IOSPhoneRPCDispatch.swift app/ios/PhoneRunner/PhoneRunnerObservation.swift
 
+      - name: Cache pub and pods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            app/ios/Pods
+          key: pods-${{ hashFiles('app/pubspec.lock', 'app/ios/Podfile.lock') }}
+
       - name: Install Flutter
         run: |
           archive="flutter_macos_arm64_${FLUTTER_VERSION}-stable.zip"
